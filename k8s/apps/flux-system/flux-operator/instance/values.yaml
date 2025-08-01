@@ -1,0 +1,21 @@
+instance:
+  distribution:
+    # renovate: datasource=github-releases depName=controlplaneio-fluxcd/distribution
+    version: 2.6.4
+  cluster:
+    networkPolicy: false
+  components:
+    - source-controller
+    - kustomize-controller
+    - helm-controller
+    - notification-controller
+  sync:
+    kind: GitRepository
+    provider: github
+    url: https://github.com/jardt/k8s-playground.git # NOTE 
+    ref: refs/heads/main
+    path: clusters/playground
+    pullsecret: "flux-system"
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: flux
