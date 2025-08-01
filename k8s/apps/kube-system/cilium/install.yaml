@@ -9,7 +9,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./k8s/main/apps/kube-system/cilium/app
+  path: ./k8s/apps/kube-system/cilium/app
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -30,7 +30,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./k8s/main/apps/kube-system/cilium/config
+  path: ./k8s/apps/kube-system/cilium/config
   sourceRef:
     kind: GitRepository
     name: flux-system
@@ -54,7 +54,7 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./k8s/main/apps/kube-system/cilium/gateway
+  path: ./k8s/apps/kube-system/cilium/gateway
   sourceRef:
     kind: GitRepository
     name: flux-system

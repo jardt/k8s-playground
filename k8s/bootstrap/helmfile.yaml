@@ -18,20 +18,20 @@ releases:
       - events: ["postsync"]
         command: '{{ requiredEnv "KUBERNETES_DIR" }}/bootstrap/cilium-config.sh'
         showlogs: true
-        # - name: coredns
-        #   namespace: kube-system
-        #   atomic: true
-        #   chart: oci://ghcr.io/coredns/charts/coredns
-        #   version: 1.43.0
-        #   values: ['{{ requiredEnv "KUBERNETES_DIR" }}/apps/kube-system/coredns/app/values.yaml']
-        #   needs: ["kube-system/cilium"]
+  - name: coredns
+    namespace: kube-system
+    atomic: true
+    chart: oci://ghcr.io/coredns/charts/coredns
+    version: 1.43.0
+    values: ['{{ requiredEnv "KUBERNETES_DIR" }}/apps/kube-system/coredns/app/values.yaml']
+    needs: ["kube-system/cilium"]
   - name: flux-operator
     namespace: flux-system
     atomic: true
     chart: oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator
     version: 0.26.0
     values: ['{{ requiredEnv "KUBERNETES_DIR" }}/apps/flux-system/flux-operator/operator/values.yaml']
-    # needs: ["kube-system/coredns"]
+    needs: ["kube-system/coredns"]
   - name: flux-instance
     namespace: flux-system
     atomic: true
