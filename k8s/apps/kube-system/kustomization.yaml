@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: kube-system
+resources:
+  # Pre Flux-Kustomizations
+  - namespace.yaml
+  # Flux-Kustomizations
+  - cilium/install.yaml
+  # - coredns/install.yaml  try later wip
+  - metrics-server/install.yaml

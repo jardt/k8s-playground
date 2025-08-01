@@ -1,0 +1,18 @@
+version: "3"
+set:
+  - pipefail
+shopt:
+  - globstar
+vars:
+  KUBERNETES_ROOT: "{{.ROOT_DIR}}/k8s"
+includes:
+  bootstrap: .taskfiles/Bootstrap
+  # flux: .taskfiles/Flux
+tasks:
+  default:
+    silent: true
+    cmd: task -l
+  noop:
+    internal: true
+    silent: true
+    cmd: noop() { :; }

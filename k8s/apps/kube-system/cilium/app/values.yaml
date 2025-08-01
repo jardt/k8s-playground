@@ -1,0 +1,43 @@
+# bpf:
+#   hostLegacyRouting: true
+#   masquerade: true
+# endpointRoutes:
+#   enabled: true
+ipam:
+  mode: "kubernetes"
+  operator:
+    clusterPoolIPv4PodCIDRList: "10.42.0.0/16" # for k3s
+routingMode: native
+ipv4NativeRoutingCIDR: "10.42.0.0/16"
+autoDirectNodeRoutes: true
+cgroup:
+  hostRoot: /sys/fs/cgroup
+  autoMount:
+    enabled: false
+k8sServiceHost: 192.168.5.15 # NOTE 
+k8sServicePort: "6443"
+devices: eno1,enp4s0,eth0
+l2announcements:
+  enabled: true
+kubeProxyReplacement: true
+externalIPs:
+  enabled: true
+operator:
+  replicas: 1
+hostPort:
+  enabled: false
+gatewayAPI:
+  enabled: true # failed no matter what i tried last time 503 timed out from envoy -> pod
+loadBalancer:
+  l7:
+    backend: envoy
+ingressController:
+  enabled: false
+  loadbalancerMode: shared
+  default: true
+envoy:
+  enabled: true
+socketLB:
+  enabled: true
+envoyConfig:
+  enabled: true

@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+tasks:
+  playground:
+    desc: Bootstrap cluster
+    vars:
+      cluster: playground
+      KUBERNETES_DIR: "{{.KUBERNETES_ROOT}}"
+    env:
+      KUBERNETES_DIR: "{{.KUBERNETES_DIR}}"
+    cmds:
+      - task: deploy
+  deploy:
+    desc: set up cluster
+    preconditions:
+      - test -f "${KUBECONFIG}"
+      - test -f {{.KUBERNETES_DIR}}/bootstrap/prepare.sh
+      - test -f {{.KUBERNETES_DIR}}/bootstrap/helmfile.yaml
+    env:
+      KUBERNETES_DIR: "{{.KUBERNETES_DIR}}"
+      # KUBECONFIG: "{{.KUBERNETES_DIR}}/kubeconfig"
+    vars:
+      KUBERNETES_DIR: "{{.KUBERNETES_ROOT}}"
+    cmds:
+      - bash {{.KUBERNETES_DIR}}/bootstrap/prepare.sh
+      - helmfile --file {{.KUBERNETES_DIR}}/bootstrap/helmfile.yaml apply --skip-diff-on-install --suppress-diff
