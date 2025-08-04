@@ -50,8 +50,8 @@ run `task bootstrap:main` to set up crd`s, cilium, and flux.
 Cluster shuold now be up and running with:
 
 - cilium
-- coredns
 - flux operator
+- coredns
 - metrics server
 
 and the whoami pod shuold be there meaning flux has reconciled with git repo. 🥳

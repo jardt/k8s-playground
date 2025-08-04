@@ -1,0 +1,124 @@
+# yaml-language-server: $schema=https://homelab-schemas-epg.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2beta2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app kube-prometheus-stack
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: kube-prometheus-stack
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    nameOverride: *app
+    crds:
+      enabled: true
+      upgradeJob:
+        enabled: true
+        forceConflicts: true
+    cleanPrometheusOperatorObjectNames: true
+    alertmanager:
+      enabled: false
+    grafana:
+      enabled: false
+    kubeApiServer:
+      enabled: false
+      serviceMonitor:
+        metricRelabelings:
+          - action: drop
+            sourceLabels: ["__name__"]
+            regex: (apiserver|etcd|rest_client)_request(|_sli|_slo)_duration_seconds_bucket
+          - action: drop
+            sourceLabels: ["__name__"]
+            regex: apiserver_(response|watch_events)_sizes_bucket
+          - action: drop
+            sourceLabels: ["__name__"]
+            regex: apiserver_request_body_size_bytes_bucket
+          - action: drop
+            sourceLabels: ["__name__"]
+            regex: workqueue_(work|queue)_duration_seconds_bucket
+    kubelet:
+      enabled: false
+      serviceMonitor:
+        enabled: false
+        metricRelabelings:
+          # Drop high cardinality labels
+          - action: labeldrop
+            regex: (uid)
+          - action: labeldrop
+            regex: (id|name)
+          - action: drop
+            sourceLabels: ["__name__"]
+            regex: (rest_client_request_duration_seconds_bucket|rest_client_request_duration_seconds_sum|rest_client_request_duration_seconds_count)
+    kubeControllerManager:
+      enabled: false
+    kubeEtcd:
+      enabled: false
+      endpoints: *cp
+    kubeScheduler:
+      enabled: false
+      endpoints: *cp
+      serviceMonitor: *sm
+    kubeProxy:
+      enabled: false # KubeProxy is disabled in the cluster, cilium used
+    nodeExporter:
+      enabled: true
+    prometheus-node-exporter:
+      fullnameOverride: node-exporter
+      prometheus:
+        monitor:
+          enabled: true
+    kubeStateMetrics:
+      enabled: false
+    kube-state-metrics:
+      fullnameOverride: kube-state-metrics
+      prometheus:
+        monitor:
+          enabled: false
+          honorLabels: true
+    prometheusOperator:
+      fullnameOverride: prometheus-operator
+    prometheus:
+      route:
+        main:
+          enabled: true
+          hostnames: ["prometheus.playground.lan"]
+          parentRefs:
+            - name: internal
+              namespace: kube-system
+              sectionName: web-gateway
+      prometheusSpec:
+        # alertingEndpoints:
+        #   - namespace: observability
+        #     name: alertmanager
+        #     port: 9093
+        #     apiVersion: v2
+        podMonitorSelectorNilUsesHelmValues: false
+        probeSelectorNilUsesHelmValues: false
+        ruleSelectorNilUsesHelmValues: false
+        scrapeConfigSelectorNilUsesHelmValues: false
+        serviceMonitorSelectorNilUsesHelmValues: false
+        enableAdminAPI: true
+        walCompression: true
+        enableFeatures:
+          - memory-snapshot-on-shutdown
+        retention: 14d
+        retentionSize: 50GB
+        resources:
+          requests:
+            cpu: 100m
+          limits:
+            memory: 2000Mi
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: local-path
+              resources:
+                requests:
+                  storage: 2Gi
