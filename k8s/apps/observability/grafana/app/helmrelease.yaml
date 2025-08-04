@@ -1,0 +1,264 @@
+# yaml-language-server: $schema=https://homelab-schemas-epg.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: grafana
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: grafana
+  maxHistory: 3
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    deploymentStrategy:
+      type: Recreate
+    rbac:
+      pspEnabled: false
+    persistence:
+      enabled: true
+      storageClassName: local-path
+    testFramework:
+      enabled: false
+    admin:
+      existingSecret: grafana-secret
+    env:
+      GF_DATE_FORMATS_USE_BROWSER_LOCALE: true
+      GF_EXPLORE_ENABLED: true
+      # GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: natel-discrete-panel,pr0ps-trackmap-panel,panodata-map-panel
+      GF_SECURITY_ANGULAR_SUPPORT_ENABLED: true
+      GF_SERVER_ROOT_URL: https://grafana.playground.lan
+    envFromSecrets:
+      - name: grafana-secret
+    grafana.ini:
+      analytics:
+        check_for_updates: false
+        check_for_plugin_updates: false
+        reporting_enabled: false
+      auth.anonymous:
+        enabled: true
+        org_id: 1
+        org_name: Main Org.
+        org_role: Viewer
+      date_formats:
+        use_browser_locale: true
+        full_date: "MMM Do, YYYY hh:mm:ss a"
+      explore:
+        enabled: true
+      grafana_net:
+        url: https://grafana.net
+      log:
+        mode: console
+        filters: rendering:debug
+      news:
+        news_feed_enabled: false
+      panels:
+        disable_sanitize_html: true
+      paths:
+        data: /var/lib/grafana/data
+        logs: /var/log/grafana
+        plugins: /var/lib/grafana/plugins
+        provisioning: /etc/grafana/provisioning
+      security:
+        allow_embedding: true
+        cookie_samesite: grafana
+      server:
+        root_url: https://grafana.playground.lan
+      users:
+        auto_assign_org: true
+        auto_assign_org_id: 1
+    dashboardProviders:
+      dashboardproviders.yaml:
+        apiVersion: 1
+        providers:
+          - name: "default"
+            disableDeletion: false
+            editable: true
+            folder: ""
+            options:
+              path: /var/lib/grafana/dashboards/default
+            orgId: 1
+            type: file
+          - name: "cilium"
+            orgId: 1
+            folder: "Cilium"
+            type: file
+            disableDeletion: false
+            editable: true
+            options:
+              path: /var/lib/grafana/dashboards/cilium
+          - name: "data"
+            orgId: 1
+            folder: "Data"
+            type: file
+            disableDeletion: false
+            editable: true
+            options:
+              path: /var/lib/grafana/dashboards/data
+          - name: "flux"
+            orgId: 1
+            folder: "Flux"
+            type: file
+            disableDeletion: false
+            editable: true
+            options:
+              path: /var/lib/grafana/dashboards/flux
+          - name: "kubernetes"
+            orgId: 1
+            folder: "Kubernetes"
+            type: file
+            disableDeletion: false
+            editable: true
+            options:
+              path: /var/lib/grafana/dashboards/kubernetes
+          - name: "system"
+            orgId: 1
+            folder: "System"
+            type: file
+            disableDeletion: false
+            editable: true
+            allowUiUpdates: true
+            options:
+              path: /var/lib/grafana/dashboards/system
+    datasources:
+      datasources.yaml:
+        apiVersion: 1
+        # list of datasources that should be deleted from the database
+        deleteDatasources:
+          - name: Prometheus
+            orgId: 1
+        datasources:
+          - name: Prometheus
+            type: prometheus
+            access: proxy
+            url: http://prometheus-operated.observability.svc.cluster.local:9090
+            isDefault: true
+    route:
+      internal:
+        enabled: true
+        hostnames: ["grafana.playground.lan"]
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: web-gateway
+    imageRenderer:
+      enabled: true
+      replicas: 1
+      networkPolicy:
+        limitIngress: false
+      serviceMonitor:
+        enabled: true
+    plugins:
+      - grafana-clock-panel
+      - grafana-piechart-panel
+      - grafana-worldmap-panel
+    serviceMonitor:
+      enabled: true
+    serviceAccount:
+      autoMount: true
+    sidecar:
+      image:
+        registry: ghcr.io
+        repository: home-operations/k8s-sidecar
+        tag: 1.30.7@sha256:3b6444d91c6e69a9e07c5e55419452d967d18c833d88b36277dc2021b708f621
+      datasources:
+        enabled: true
+        searchNamespace: ALL
+        initDatasources: true
+        labelValue: ""
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        folderAnnotation: grafana_folder
+        searchNamespace: ALL
+        provider:
+          disableDelete: true
+          foldersFromFilesStructure: true
+    dashboards:
+      cilium:
+        cilium-dashboard:
+          url: https://raw.githubusercontent.com/cilium/cilium/v1.18.0/install/kubernetes/cilium/files/cilium-agent/dashboards/cilium-dashboard.json
+          datasource: Prometheus
+        cilium-operator-dashboard:
+          url: https://raw.githubusercontent.com/cilium/cilium/v1.18.0/install/kubernetes/cilium/files/cilium-operator/dashboards/cilium-operator-dashboard.json
+          datasource:
+            - name: DS_PROMETHEUS
+              value: Prometheus
+        envoy:
+          # renovate: dashboardNam="Envoy Proxy Monitoring gRPC"
+          gnetId: 23239
+          revision: 1
+          datasource:
+            - {name: DS_AFRANET_PROMETHEUS, value: Prometheus,}
+            # hubble-dashboard:
+            #   url: https://raw.githubusercontent.com/cilium/cilium/v1.18.0/install/kubernetes/cilium/files/hubble/dashboards/hubble-dashboard.json
+            #   datasource: Prometheus
+      # data:
+      #   cloudnative-pg:
+      #     url: https://raw.githubusercontent.com/cloudnative-pg/grafana-dashboards/main/charts/cluster/grafana-dashboard.json
+      #     datasource: Prometheus
+      #   redis-sentinel:
+      #     # renovate: dashboardName="Redis"
+      #     gnetId: 12776
+      #     revision: 2
+      #     datasource: Redis
+      #   vernemq:
+      #     # renovate: dashboardName="VerneMQ Cluster"
+      #     gnetId: 23485
+      #     revision: 2
+      #     datasource:
+      #       - {name: DS_PROMETHEUS, value: Prometheus}
+      flux:
+        flux-cluster:
+          url: https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/monitoring/configs/dashboards/cluster.json
+          datasource:
+            - name: DS_PROMETHEUS
+              value: Prometheus
+        flux-control-plane:
+          url: https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/monitoring/configs/dashboards/control-plane.json
+          datasource: Prometheus
+      kubernetes:
+        api-server:
+          # renovate: dashboardName="Kubernetes / System / API Server"
+          gnetId: 15761
+          revision: 19
+          datasource: Prometheus
+        coredns:
+          # renovate: dashboardName="Kubernetes / System / CoreDNS"
+          gnetId: 15762
+          revision: 20
+          datasource: Prometheus
+        global:
+          # renovate: dashboardName="Kubernetes / Views / Global"
+          gnetId: 15757
+          revision: 43
+          datasource: Prometheus
+        namespaces:
+          # renovate: dashboardName="Kubernetes / Views / Namespaces"
+          gnetId: 15758
+          revision: 42
+          datasource: Prometheus
+        nodes:
+          # renovate: dashboardName="Kubernetes / Views / Nodes"
+          gnetId: 15759
+          revision: 37
+          datasource: Prometheus
+        pods:
+          # renovate: dashboardName="Kubernetes / Views / Pods"
+          gnetId: 15760
+          revision: 36
+          datasource: Prometheus
+        volumes:
+          # renovate: dashboardName="K8s / Storage / Volumes / Cluster"
+          gnetId: 11454
+          revision: 14
+          datasource: Prometheus

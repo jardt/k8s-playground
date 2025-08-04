@@ -7,3 +7,4 @@ resources:
   - namespace.yaml
   # Flux-Kustomizations
   - kube-prometheus-stack/install.yaml
+  - grafana/install.yaml
