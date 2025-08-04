@@ -60,11 +60,8 @@ spec:
       enabled: false
     kubeEtcd:
       enabled: false
-      endpoints: *cp
     kubeScheduler:
       enabled: false
-      endpoints: *cp
-      serviceMonitor: *sm
     kubeProxy:
       enabled: false # KubeProxy is disabled in the cluster, cilium used
     nodeExporter:
