@@ -29,33 +29,10 @@ spec:
       enabled: false
     kubeApiServer:
       enabled: false
-      serviceMonitor:
-        metricRelabelings:
-          - action: drop
-            sourceLabels: ["__name__"]
-            regex: (apiserver|etcd|rest_client)_request(|_sli|_slo)_duration_seconds_bucket
-          - action: drop
-            sourceLabels: ["__name__"]
-            regex: apiserver_(response|watch_events)_sizes_bucket
-          - action: drop
-            sourceLabels: ["__name__"]
-            regex: apiserver_request_body_size_bytes_bucket
-          - action: drop
-            sourceLabels: ["__name__"]
-            regex: workqueue_(work|queue)_duration_seconds_bucket
     kubelet:
-      enabled: false
+      enabled: true
       serviceMonitor:
-        enabled: false
-        metricRelabelings:
-          # Drop high cardinality labels
-          - action: labeldrop
-            regex: (uid)
-          - action: labeldrop
-            regex: (id|name)
-          - action: drop
-            sourceLabels: ["__name__"]
-            regex: (rest_client_request_duration_seconds_bucket|rest_client_request_duration_seconds_sum|rest_client_request_duration_seconds_count)
+        enabled: true
     kubeControllerManager:
       enabled: false
     kubeEtcd:
@@ -72,12 +49,12 @@ spec:
         monitor:
           enabled: true
     kubeStateMetrics:
-      enabled: false
+      enabled: true
     kube-state-metrics:
       fullnameOverride: kube-state-metrics
       prometheus:
         monitor:
-          enabled: false
+          enabled: true
           honorLabels: true
     prometheusOperator:
       fullnameOverride: prometheus-operator

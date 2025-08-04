@@ -24,6 +24,10 @@ externalIPs:
   enabled: true
 operator:
   replicas: 1
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
 hostPort:
   enabled: false
 gatewayAPI:
@@ -41,3 +45,8 @@ socketLB:
   enabled: true
 envoyConfig:
   enabled: true
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    trustCRDsExist: true
