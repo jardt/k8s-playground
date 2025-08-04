@@ -4,10 +4,10 @@ set:
 shopt:
   - globstar
 vars:
+  ROOT_DIR: "{{.ROOT_DIR}}"
   KUBERNETES_ROOT: "{{.ROOT_DIR}}/k8s"
 includes:
   bootstrap: .taskfiles/Bootstrap
-  # flux: .taskfiles/Flux
 tasks:
   default:
     silent: true

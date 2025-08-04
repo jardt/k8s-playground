@@ -2,25 +2,36 @@
 version: "3"
 tasks:
   playground:
-    desc: Bootstrap cluster
+    desc: create vm and Bootstrap cluster
     vars:
       cluster: playground
       KUBERNETES_DIR: "{{.KUBERNETES_ROOT}}"
     env:
       KUBERNETES_DIR: "{{.KUBERNETES_DIR}}"
+    preconditions:
+      - sh: which limactl
     cmds:
+      - cat {{.ROOT_DIR}}/k3s-template.yaml | limactl create --name=playground -
+      - limactl start playground
+      - export KUBECONFIG=~/.lima/playground/copied-from-guest/kubeconfig.yaml
       - task: deploy
   deploy:
     desc: set up cluster
     preconditions:
       - test -f "${KUBECONFIG}"
-      - test -f {{.KUBERNETES_DIR}}/bootstrap/prepare.sh
-      - test -f {{.KUBERNETES_DIR}}/bootstrap/helmfile.yaml
+      - test -f {{.ROOT_DIR}}/bootstrap/bootstrap-cluster.sh
+      - test -f {{.ROOT_DIR}}/bootstrap/helmfile.yaml
     env:
       KUBERNETES_DIR: "{{.KUBERNETES_DIR}}"
       # KUBECONFIG: "{{.KUBERNETES_DIR}}/kubeconfig"
     vars:
       KUBERNETES_DIR: "{{.KUBERNETES_ROOT}}"
     cmds:
-      - bash {{.KUBERNETES_DIR}}/bootstrap/prepare.sh
-      - helmfile --file {{.KUBERNETES_DIR}}/bootstrap/helmfile.yaml apply --skip-diff-on-install --suppress-diff
+      - bash {{.ROOT_DIR}}/bootstrap/bootstrap-cluster.sh
+  destroy:
+    desc: destory cluster and vm
+    preconditions:
+      - sh: which limactl
+    cmds:
+      - limactl stop playground -f
+      - limactl delete playground

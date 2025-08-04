@@ -1,3 +1,5 @@
 .direnv
 *private*.pem
 private-secret.yaml
+age.agekey
+*no-commit*

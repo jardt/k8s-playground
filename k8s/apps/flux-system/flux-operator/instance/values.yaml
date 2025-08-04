@@ -15,7 +15,7 @@ instance:
     url: https://github.com/jardt/k8s-playground.git # NOTE 
     ref: refs/heads/main
     path: clusters/playground
-    pullSecret: "flux-system"
+    pullSecret: "github-app"
   commonMetadata:
     labels:
       app.kubernetes.io/name: flux

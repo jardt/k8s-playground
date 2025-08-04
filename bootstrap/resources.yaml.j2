@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: github-app
+  namespace: flux-system
+stringData:
+  githubAppID: {{ ENV.APP_ID }}
+  githubAppInstallationID: {{ ENV.APP_INSTALLATION_ID }}
+  githubAppPrivateKey: {{ ENV.APP_PRIVATE_KEY }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sops-age
+  namespace: flux-system
+stringData:
+  age.agekey: {{ ENV.AGEKEY }}

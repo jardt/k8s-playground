@@ -22,7 +22,7 @@ function log() {
     local configured_priority=${level_priority[$configured_level]:-2}
 
     # Skip log messages below the configured log level
-    if (( current_priority < configured_priority )); then
+    if ((current_priority < configured_priority)); then
         return
     fi
 
@@ -58,8 +58,8 @@ function log() {
     fi
 
     # Print the log message
-    printf "%s %b%s%b %s %b\n" "$(date --iso-8601=seconds)" \
-        "${color}" "${level^^}" "\033[0m" "${msg}" "${data}" > "${output_stream}"
+    printf "%s %b%s%b %s %b\n" "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+        "${color}" "${level^^}" "\033[0m" "${msg}" "${data}" >"${output_stream}"
 
     # Exit if the log level is error
     if [[ "$level" == "error" ]]; then
@@ -71,10 +71,13 @@ function log() {
 function check_env() {
     local envs=("${@}")
     local missing=()
+    local values=()
 
     for env in "${envs[@]}"; do
         if [[ -z "${!env-}" ]]; then
             missing+=("${env}")
+        else
+            values+=("${env}=${!env}")
         fi
     done
 
@@ -82,7 +85,7 @@ function check_env() {
         log error "Missing required env variables" "envs=${missing[*]}"
     fi
 
-    log debug "Env variables are set" "envs=${envs[*]}"
+    log debug "Env variables are set" "envs=${values[*]}"
 }
 
 # Check if required CLI tools are installed
@@ -102,3 +105,20 @@ function check_cli() {
 
     log debug "Deps are installed" "deps=${deps[*]}"
 }
+
+# Render a template using minijinja and inject secrets using op
+function render_template() {
+    local -r file="${1}"
+    local output
+
+    if [[ ! -f "${file}" ]]; then
+        log error "File does not exist" "file=${file}"
+    fi
+
+    if ! output=$(minijinja-cli --env "${file}" ) || [[ -z "${output}" ]]; then
+        log error "Failed to render config" "file=${file}"
+    fi
+
+    echo "${output}"
+}
+

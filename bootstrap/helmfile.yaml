@@ -5,6 +5,7 @@ helmDefaults:
   timeout: 600
   recreatePods: true
   force: true
+  cleanupOnFail: true
 repositories:
   - name: cilium
     url: https://helm.cilium.io
@@ -14,10 +15,6 @@ releases:
     chart: oci://ghcr.io/home-operations/charts-mirror/cilium
     version: 1.18.0
     values: ['{{ requiredEnv "KUBERNETES_DIR" }}/apps/kube-system/cilium/app/values.yaml']
-    hooks:
-      - events: ["postsync"]
-        command: '{{ requiredEnv "KUBERNETES_DIR" }}/bootstrap/cilium-config.sh'
-        showlogs: true
   - name: coredns
     namespace: kube-system
     atomic: true
