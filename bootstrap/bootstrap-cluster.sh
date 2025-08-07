@@ -117,7 +117,7 @@ function sync_helm_releases() {
 }
 
 function main() {
-    check_env KUBECONFIG APP_ID APP_INSTALLATION_ID APP_PRIVATE_KEY AGEKEY
+    check_env KUBECONFIG SOPS_AGE_KEY
     check_cli helmfile jq kubectl kustomize minijinja-cli yq
 
     # Apply resources and Helm releases

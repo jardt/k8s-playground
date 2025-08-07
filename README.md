@@ -32,10 +32,6 @@ Start it: `limactl start playground`
 
 ## Bootstraping
 
-[Flux operator needs a private key secret for github app](https://fluxcd.io/blog/2025/04/flux-operator-github-app-bootstrap/#github-app-docs) to access repo.
-App id can be found on the app page. To get install id, install the app in the repo, then get the install id from the url:
-`https://github.com/settings/installations/{id}`
-
 ### Required env for installing
 
 Having these env variables set is required for bootstrap task to succeed
@@ -48,14 +44,14 @@ create a age key to encrypt secrets with sops:
 
 set env vars:
 
-`export AGEKEY=<PRIVATE AGE KEY>`
-`export APP_PRIVATE_KEY=<GITHUB APP PRIVE KEY .pem FILE CONTENT>`
-`export APP_ID=<GITHUB APP ID>`
-`export APP_INSTALLATION_ID=<INSTALL GITHUB APP ID>`
+`export SOPS_AGE_KEY=<PRIVATE AGE KEY>`
+
+edit the k8s/compontents/common/sops/secret.sops.yaml to contain the private key.
+encrypt it with sops.
 
 ### Bootstrap task
 
-run `task bootstrap:playground` to create vm, start it, set up crd`s, namespaces, age key secret, github app flux secret cilium, and flux.
+run `task bootstrap:playground` to create vm, start it, set up crd`s, namespaces, age key secret, cilium, coredns, and flux.
 
 Cluster should now be up and running with:
 
@@ -66,10 +62,16 @@ Cluster should now be up and running with:
 
 and the whoami pod should be there meaning flux has reconciled with git repo. 🥳
 
-good idea to unset env variables: `unset AGEKEY`..
+## Sops
 
-## Destroying
+Secrets files should have the name *.sops.yaml, as per the .sops.yaml config. ( set public key here )
+While having set the SOPS_AGE_KEY env var, run `sops -e -i path/to/file/secret.sops.yaml` to encrypt it in place.
 
-`task bootstrap:destory to delete vm`
+Cluster will have the private key to decrypt as the bootstraping will apply a secret containing it using the env var.
+The cluster apps kustomization will use that to decrypt the secret with the same private key in k8s/compontents/common/sops/, and flux will create a secret for each namespace create a secret with the same private key.
+
+# Destroying
+
+`task bootstrap:destory` to delate the vm
 
 ## TODO
