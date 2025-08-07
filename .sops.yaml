@@ -2,7 +2,7 @@ creation_rules:
   - path_regex: k8s/.+\.sops\.yaml
     encrypted_regex: ^(data|stringData)$
     mac_only_encrypted: true
-    age: age1023mc3alej5xff6w5xcdf8pwkma4qedtlyg4dqtknvs54vu87qzqlmxsgc
+    age: age1q8x7u7rpw8dac0w89lf3cd4p24sw2zez9axsjggtxe34sl90n5cqptam90
 stores:
   yaml:
     indent: 2

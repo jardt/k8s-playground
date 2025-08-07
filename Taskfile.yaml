@@ -7,7 +7,8 @@ vars:
   ROOT_DIR: "{{.ROOT_DIR}}"
   KUBERNETES_ROOT: "{{.ROOT_DIR}}/k8s"
 includes:
-  bootstrap: .taskfiles/Bootstrap
+  bootstrap: .taskfiles/bootstrap
+  volsync: .taskfiles/volsync
 tasks:
   default:
     silent: true

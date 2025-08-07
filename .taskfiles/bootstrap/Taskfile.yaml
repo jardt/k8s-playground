@@ -14,6 +14,8 @@ tasks:
       - cat {{.ROOT_DIR}}/k3s-template.yaml | limactl create --name=playground -
       - limactl start playground
       - export KUBECONFIG=~/.lima/playground/copied-from-guest/kubeconfig.yaml
+      - limactl copy {{.ROOT_DIR}}/bootstrap/vm-bootstrap.sh playground:/home/lima.linux/bootstrap.sh
+      - limactl shell playground -- bash /home/lima.linux/bootstrap.sh
       - task: deploy
   deploy:
     desc: set up cluster

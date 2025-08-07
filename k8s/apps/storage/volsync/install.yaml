@@ -2,22 +2,24 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app whoami
-  namespace: &namespace default
+  name: &app volsync
+  namespace: &namespace storage
 spec:
   targetNamespace: *namespace
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  path: ./k8s/apps/default/whoami/app
+  path: ./k8s/apps/storage/volsync/app
   sourceRef:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
+  dependsOn:
+    - name: snapshot-controller
+      namespace: storage
+    - name: openebs
+      namespace: storage
   prune: true
-  wait: false
+  wait: true
   interval: 30m
   timeout: 5m
-  postBuild:
-    substitute:
-      APP: *app
